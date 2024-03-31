@@ -1,3 +1,3 @@
 import {io} from "socket.io-client"
 
-export const socket = () => io("https://chat-online-navy.vercel.app/")
+export const socket = () => io("http://hotelsystem.linxycorporation.com.br:8382")
