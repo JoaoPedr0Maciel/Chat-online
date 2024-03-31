@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import snowBackground from "../../assets/snow.jpg";
 import { GoPaperAirplane } from "react-icons/go";
 import { socket } from "../../socket";
@@ -9,16 +9,19 @@ type Messages = {
   isOwner: boolean;
   name: string;
 };
+
 const Home = () => {
   const [messages, setMessages] = useState<Messages[]>([]);
   const [username, setUsername] = useState("");
   const [inputName, setInputName] = useState("");
   const [socketInstance] = useState(socket());
   const [inputMessage, setInputMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     socketInstance.on("message", (message) => {
       setMessages((prev) => [...prev, message]);
+      scrollToBottom();
     });
 
     return () => {
@@ -37,6 +40,11 @@ const Home = () => {
       return;
     }
 
+    if (!inputMessage) {
+      alert("Você deve digitar uma mensagem");
+      return;
+    }
+
     const newMessage = { text: inputMessage, name: username };
 
     socketInstance.emit("message", newMessage);
@@ -47,6 +55,13 @@ const Home = () => {
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
       handleSubmit();
+      scrollToBottom();
+    }
+  }
+
+  function scrollToBottom() {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }
 
@@ -57,7 +72,7 @@ const Home = () => {
     >
       <div className="mb-5 flex items-center justify-center">
         <input
-          className="w-[400px] px-2 outline-none h-10 rounded-l-lg"
+          className=" w-[250px]  md:w-[400px] px-2 outline-none h-10 rounded-l-lg"
           value={inputName}
           onChange={(e) => setInputName(e.target.value)}
           type="text"
@@ -71,11 +86,11 @@ const Home = () => {
         </button>
       </div>
 
-      <div className="w-[500px] h-[400px] overflow-auto bg-transparent rounded-xl backdrop-blur-md">
+      <div className=" w-[300px] h-[300px]  md:w-[450px] md:h-[400px] overflow-auto bg-transparent rounded-t-xl backdrop-blur-md">
         <div className="p-4 min-h-full w-full">
           {messages.map((message, index) => (
             <div key={index} className="min-h-full ">
-              <p className="text-black font-medium px-1">
+              <p className="text-black font-bold px-1">
                 {message.isOwner ? "" : message.name}
               </p>
               <p
@@ -89,8 +104,10 @@ const Home = () => {
               </p>
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
       </div>
+
       <div className="relative">
         <div className="flex justify-center items-center">
           <input
@@ -98,12 +115,12 @@ const Home = () => {
             onKeyDown={handleKeyDown}
             onChange={(e) => setInputMessage(e.target.value)}
             type="text"
-            className="w-[450px] px-2 outline-none py-2"
-            placeholder="Digite sua mensagem e seja gentil..."
+            className=" w-[250px] md:w-[400px] px-4 outline-none py-2"
+            placeholder="Digite sua mensagem..."
           />
           <GoPaperAirplane
             onClick={handleSubmit}
-            className=" text-cyan-500 w-12 h-10 px-2.5 cursor-pointer bg-white"
+            className=" text-blue-500 w-12 h-10 px-2.5 cursor-pointer bg-white"
           />
         </div>
       </div>
